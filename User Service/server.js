@@ -6,7 +6,7 @@ const port = process.env.PORT || 4000;
 const {pool} = require('./dbConfig');
 
 const userRoutes = require('./routes/userRoutes');
-app.set('view engine', 'ejs');
+// app.set('view engine', 'ejs');
 
 app.use(express.urlencoded({extended: false}));
 
