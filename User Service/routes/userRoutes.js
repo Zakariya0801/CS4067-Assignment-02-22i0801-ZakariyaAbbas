@@ -12,7 +12,11 @@ router
 .post('/register', addNewUser)
 // .post('/register', addNewUser)
 .get('/login', (req,res) => {
-    res.render('login');
+
+
+    res.status(200).json({
+        name: "Zakariya"
+    })
 })
 .get('/Dashboard', (req,res) => {
     res.render('Dashboard', {user: "Zakariya"});
