@@ -4,6 +4,8 @@ import Dashboard from './Dashboard'
 import SignUpPage from './SignUp'
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Navbar from './NavBar';
+import EventsPage from './Events';
 function App() {
 
   return (
@@ -21,9 +23,11 @@ function App() {
         draggable
         pauseOnHover
       />
+      <Navbar />
         <Routes>
           <Route path='/' element={<Login />} />
           <Route path='/home' element={<Dashboard />} />
+          <Route path='/events' element={<EventsPage />} />
           <Route path='/signup' element={<SignUpPage />} />
           
         </Routes>
