@@ -1,56 +1,37 @@
 from flask import Flask, request, jsonify
+from flask_mail import Mail, Message
 import os
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from dotenv import load_dotenv
-import logging
-from flask_mail import Mail, Message 
-
-
-# Load environment variables from .env file
-load_dotenv()
-
 app = Flask(__name__)
+GMAIL_PERSONAL = os.getenv('GMAIL_PERSONAL')
+PASSWORD = os.getenv('PASSWORD')
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+print("Address = ", GMAIL_PERSONAL)
+print("Pasword = ", PASSWORD)
+# Email Configuration
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'  # Change for different providers
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+# app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_USERNAME'] = GMAIL_PERSONAL  # Replace with your email
+app.config['MAIL_PASSWORD'] = PASSWORD  # Use an app password if needed
 
-# Gmail account settings - load from environment variables for security
-GMAIL_ADDRESS = os.getenv('GMAIL_ADDRESS')
-GMAIL_PASSWORD = os.getenv('GMAIL_PASSWORD')  # App password, not your regular Gmail password
-PORT = os.getenv('NEWPORT')  # App password, not your regular Gmail password
-mail = Mail(app) # instantiate the mail class 
-app.config['MAIL_SERVER']='smtp.gmail.com'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = 'i220801@nu.edu.pk'
-app.config['MAIL_PASSWORD'] = 'GPA@3.84'
-app.config['MAIL_USE_TLS'] = False
-app.config['MAIL_USE_SSL'] = True
+mail = Mail(app)
 
-def send_email(recipient, subject, message):
-    """
-    Send an email using Gmail SMTP
-    """
+# @app.route('/send-email', methods=['POST'])
+def send_email(recipients,subject,body):
+    if not recipients:
+        return jsonify({'error': 'Recipients list is empty'}), 400
+
     try:
-        msg = Message( 
-                    subject, 
-                    sender ='i220801@nu.edu.pk', 
-                    recipients = [recipient] 
-                ) 
-        msg.body = message
-        mail.send(msg) 
-        return 'Sent'
-        
+        print(recipients)
+        print(subject)
+        print(body)
+        msg = Message(subject=subject, recipients=recipients, body=body, sender=GMAIL_PERSONAL)
+        msg.html = body     
+        mail.send(msg)
+        return jsonify({'message': f'Email sent successfully to {len(recipients)} users'})
     except Exception as e:
-        logger.error(f"Failed to send email: {str(e)}")
-        return False
-
-@app.route('/health', methods=['GET'])
-def health_check():
-    """Simple health check endpoint"""
-    return jsonify({"status": "healthy"}), 200
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/api/send-booking-notification', methods=['POST'])
@@ -68,7 +49,7 @@ def send_booking_notification():
     }
     """
     data = request.json
-    
+    print("data = ", data)
     # Validate required fields
     required_fields = ['customer_email', 'customer_name', 'service_name', 'booking_date', 'booking_time']
     for field in required_fields:
@@ -106,16 +87,12 @@ def send_booking_notification():
     """
     
     # Send the email
-    if send_email(data['customer_email'], subject, message):
-        return jsonify({"status": "success", "message": "Booking notification sent successfully"}), 200
-    else:
-        return jsonify({"status": "error", "message": "Failed to send booking notification"}), 500
+    # if 
+    statuss = send_email([data['customer_email']], subject, message)
+    return statuss
+    # return jsonify({"status": "success", "message": "Booking notification sent successfully"}), 200
+    # else:
+        # return jsonify({"status": "error", "message": "Failed to send booking notification"}), 500
 
 if __name__ == '__main__':
-    # Check if environment variables are set
-    if not GMAIL_ADDRESS or not GMAIL_PASSWORD:
-        logger.error("Gmail credentials not set. Please set GMAIL_ADDRESS and GMAIL_PASSWORD environment variables.")
-        exit(1)
-    
-    port = int(os.getenv('PORT', PORT))
-    app.run(host='0.0.0.0', port=port, debug=False)
+    app.run(debug=True)
