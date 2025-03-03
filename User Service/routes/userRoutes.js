@@ -6,11 +6,11 @@ router
 .get('/', (req,res) => {
     res.render('index');
 })
+.get('/:id', getUser)
 .get('/register', (req,res) => {
     res.render('register');
 })
 .post('/register', addNewUser)
-// .post('/register', addNewUser)
 .get('/login', (req,res) => {
 
 
