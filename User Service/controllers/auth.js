@@ -18,24 +18,27 @@ const protect = async (req, res) => {
       // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       // Find user from token
-      pool.query(
-        `SELECT * FROM users
-        WHERE id = $1`, [decoded.userId], async (err,results) => {
-            if(err){
-                throw err;
-            }
-            console.log(results.rows)
+      res.status(200).json({
+        decoded
+      });
+      // pool.query(
+      //   `SELECT * FROM users
+      //   WHERE id = $1`, [decoded.userId], async (err,results) => {
+      //       if(err){
+      //           throw err;
+      //       }
+      //       console.log(results.rows)
 
-            if(results.rows.length == 0){
-                return res.status(401).json({ message: "Token is not valid" });
-            }
-            // Add user to request object
-            const user = results.rows[0]; 
-            res.status(200).json({
-              user,
-            })
-        }
-    );
+      //       if(results.rows.length == 0){
+      //           return res.status(401).json({ message: "Token is not valid" });
+      //       }
+      //       // Add user to request object
+      //       const user = results.rows[0]; 
+      //       res.status(200).json({
+      //         user,
+      //       })
+      //   }
+      // );
     } catch (error) {
       res.status(401).json({ message: "Token is not valid" });
     }
@@ -85,7 +88,7 @@ const signup = async (req, res) => {
                 throw err;
             }
             res.status(200).json({
-                result: results.rows[0]
+                message: "Successfully Signed up"
             });
          }
       );
@@ -111,7 +114,7 @@ const login = async (req, res) => {
 
     // Find user
     pool.query(
-        `SELECT * FROM users
+        `SELECT name,email,id, password FROM users
         WHERE email = $1`, [email], async (err,results) => {
             if(err){
                 throw err;
@@ -122,13 +125,19 @@ const login = async (req, res) => {
                 return res.status(401).json({ message: "Invalid credentials" });
             }
             const user = results.rows[0];
+
+            console.log("user = ", user);
             // Validate password
             const isPasswordValid = await bcrypt.compare(password, user.password);
             if (!isPasswordValid) {
               return res.status(401).json({ message: "Invalid credentials" });
             }
             const token = jwt.sign(
-              { userId: user._id, role: user.role },
+              { user: {
+                email: user.email,
+                name: user.name,
+                id: user.id,
+              } },
               process.env.JWT_SECRET,
               { expiresIn: "2h" }
             );
