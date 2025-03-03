@@ -1,10 +1,14 @@
+const { default: axiosInstance } = require('../Services/axiosInstance');
 const Booking = require('../models/Booking'); // Import the Booking model
 
 // Create a new booking
+const amqp = require('amqplib');
+
 exports.createBooking = async (req, res) => {
     try {
-        const { userId, eventId, tickets, totalPrice } = req.body;
-
+        const { userId, eventId, tickets, totalPrice, additionalDetails } = req.body;
+        const user = await  axiosInstance.get(`/user/${userId}`);
+        // Create and save the booking
         const newBooking = new Booking({
             userId,
             eventId,
@@ -13,9 +17,57 @@ exports.createBooking = async (req, res) => {
         });
 
         await newBooking.save();
-        res.status(201).json({ success: true, message: 'Booking created successfully', booking: newBooking });
+
+        // Send email notification via RabbitMQ
+        try {
+            // Connect to RabbitMQ
+            const connection = await amqp.connect('amqp://localhost');
+            const channel = await connection.createChannel();
+            
+            // Declare the queue
+            const queue = 'email_queue';
+            await channel.assertQueue(queue, { durable: true });
+            
+            // Prepare email notification data
+            const emailData = {
+                type: 'booking_notification',
+                data: {
+                    customer_email: user.email,
+                    customer_name: user.name,
+                    service_name: `Booking #${newBooking._id}`,
+                    booking_date: bookingDate || new Date().toISOString().split('T')[0],
+                    booking_time: bookingTime || 'Not specified',
+                    additional_details: additionalDetails || `Tickets: ${tickets}, Total Price: ${totalPrice}`
+                }
+            };
+            
+            // Send message to queue
+            channel.sendToQueue(queue, Buffer.from(JSON.stringify(emailData)), {
+                persistent: true
+            });
+            
+            console.log("✓ Email notification queued");
+            
+            // Close the connection after sending
+            setTimeout(() => {
+                connection.close();
+            }, 500);
+        } catch (notificationError) {
+            console.error("Failed to queue email notification:", notificationError);
+            // Note: We don't want to fail the booking creation if notification fails
+        }
+
+        res.status(201).json({ 
+            success: true, 
+            message: 'Booking created successfully', 
+            booking: newBooking 
+        });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Error creating booking', error: error.message });
+        res.status(500).json({ 
+            success: false, 
+            message: 'Error creating booking', 
+            error: error.message 
+        });
     }
 };
 

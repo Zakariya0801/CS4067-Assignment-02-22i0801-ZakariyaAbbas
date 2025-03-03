@@ -22,6 +22,26 @@ Users can browse events, book tickets, and receive confirmation notifications. T
 
 ## Communication Between Microservices
 
+### **Architectural Diagram**
+
+```markdown
+                       +---------------------+       +----------------------+
+                       |    User Service     | ----> |    Event Service     |
+                       |   (Port: 3000)      |  REST |   (Port: 5000)       |
+                       +---------------------+       +----------------------+
+                                  |                           |
+                                  |                           |
+                   REST          \|/                         \|/   REST
+           +--------------------+ | +---------------------+  |  +--------------------+
+           |  Booking Service  | | |  Notification Service |  |  Payment Gateway     |
+           |   (Port: 4000)    | | |   (Port: 6000)        |  |  (Mock Service)      |
+           +--------------------+ | +---------------------+  |  +--------------------+
+                   |              |         |                |
+             RabbitMQ Event       |    RabbitMQ Event        |
+                   |              |         |                |
+                   \------------->|         \--------------->|
+```
+
 ### **User Service → Event Service (Sync via REST API)**
 - Users retrieve available events from the Event Service.
 - Example API Call: `GET /events`
@@ -73,6 +93,15 @@ Users can browse events, book tickets, and receive confirmation notifications. T
 ### **Notification Service (Port: 6000)**
 - `POST /notifications/send` - Send confirmation notification
 
+## Jira and GitHub Integration
+To track project progress and manage tasks, we integrated both Jira and GitHub.
+
+### **Jira Board**
+![Jira Board](ss/jira_board.png)
+
+### **GitHub Issues**
+![GitHub Issues](ss/github_issues.png)
+
 ## Implementation Considerations
 ### **Best Practices Followed:**
 - **Error Handling:** Try-catch blocks implemented to ensure resilience.
@@ -82,7 +111,6 @@ Users can browse events, book tickets, and receive confirmation notifications. T
 - **Security:** Used environment variables for sensitive data like API keys and database credentials.
 - **API Documentation:** Documented all endpoints specifying request/response formats and error codes.
 - **Version Control:** Followed Git best practices, including meaningful commit messages and branching strategies.
-
 
 ## Conclusion
 The Online Event Booking Platform successfully integrates multiple microservices, utilizing synchronous REST API calls and asynchronous messaging via RabbitMQ. The architecture ensures scalability, flexibility, and efficiency while incorporating industry best practices in development, logging, security, and documentation. Future enhancements will include containerization and CI/CD pipeline integration.
