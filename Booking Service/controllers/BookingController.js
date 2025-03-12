@@ -1,4 +1,4 @@
-const { default: axiosInstance } = require('../Services/axiosInstance');
+const axiosInstance = require('../Services/axiosInstance');
 const Booking = require('../models/Booking'); // Import the Booking model
 
 // Create a new booking
@@ -7,7 +7,6 @@ const amqp = require('amqplib');
 exports.createBooking = async (req, res) => {
     try {
         const { userId, eventId, tickets, totalPrice, additionalDetails } = req.body;
-        const user = await  axiosInstance.get(`/user/${userId}`);
         // Create and save the booking
         const newBooking = new Booking({
             userId,
@@ -15,12 +14,13 @@ exports.createBooking = async (req, res) => {
             tickets,
             totalPrice
         });
-
+        
         await newBooking.save();
-
+        const user = await axiosInstance.get(`/users/${userId}`);
         // Send email notification via RabbitMQ
         try {
             // Connect to RabbitMQ
+            
             const connection = await amqp.connect('amqp://localhost');
             const channel = await connection.createChannel();
             

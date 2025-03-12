@@ -7,6 +7,7 @@ const getAllUsers = (req,res) => {
 };
 
 const getUser = (req,res) => {
+    try{
     pool.query(
         `SELECT * FROM users
         WHERE id = $1`, [req.body.id], (err,results) => {
@@ -16,16 +17,20 @@ const getUser = (req,res) => {
             if(err)
                 return res.status(200).json({ message: "Server error", error: err.message });
             if(results.rows.length > 0){
-                return res.status(200).json({ data: results.rows[0] });
+                res.status(200).json({ data: results.rows[0] });
+                return;
             }
             else{
-                return res.status(500).json({ message: "Not Found" });
+                res.status(500).json({ message: "Not Found" });
+                return;
 
             }
             
         }
     );
-    return res.status(500).json({ message: "Server error", error: error.message });
+    }catch(error){
+        return res.status(500).json({ message: "Server error", error: error.message });
+    }
 
 };
 
