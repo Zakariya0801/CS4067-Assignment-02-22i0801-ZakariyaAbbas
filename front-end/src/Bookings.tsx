@@ -34,7 +34,6 @@ const BookingsPage = () => {
 
         // Mock data for development
         
-        
       } catch (err) {
         // setError('Failed to load bookings. Please try again later.');
         setTimeout(() => {
