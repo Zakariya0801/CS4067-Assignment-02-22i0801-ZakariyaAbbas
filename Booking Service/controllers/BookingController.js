@@ -32,8 +32,8 @@ exports.createBooking = async (req, res) => {
             const emailData = {
                 type: 'booking_notification',
                 data: {
-                    customer_email: username,
-                    customer_name: useremail,
+                    customer_email: useremail,
+                    customer_name: username,
                     service_name: `Booking #${newBooking._id}`,
                     booking_date: new Date().toISOString().split('T')[0],
                     booking_time: bookingTime || 'Not specified',
@@ -74,7 +74,9 @@ exports.createBooking = async (req, res) => {
 // Get all bookings
 exports.getAllBookings = async (req, res) => {
     try {
-        const bookings = await Booking.find().populate('eventId'); // Populate event details
+        console.log("received")
+        const bookings = await Booking.find(); // Populate event details
+        console.log("doneee")
         res.status(200).json({ success: true, bookings });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error fetching bookings', error: error.message });

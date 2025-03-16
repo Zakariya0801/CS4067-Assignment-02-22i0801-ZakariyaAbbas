@@ -6,8 +6,8 @@ const bookingSchema = new mongoose.Schema({
         required: true
     },
     eventId: {
-        type: mongoose.Schema.Types.ObjectId, // Since events are in MongoDB
-        ref: 'Event', // Assuming your event model is named 'Event'
+        type: String, // Since events are in MongoDB
+        // ref: 'Event', // Assuming your event model is named 'Event'
         required: true
     },
     tickets: {
