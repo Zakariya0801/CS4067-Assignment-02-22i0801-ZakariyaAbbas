@@ -20,15 +20,15 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 # Email configuration - Replace with your SMTP settings
-SMTP_SERVER = "smtp.gmail.com"
-SMTP_PORT = 587
-SMTP_USERNAME = 'zakariyach37@gmail.com'
-SMTP_PASSWORD = 'khec yeyu zgvw sher'
-FROM_EMAIL = 'zakariyach37@gmail.com'
+SMTP_SERVER = os.getenv("SMTP_SERVER")
+SMTP_PORT = os.getenv("SMTP_PORT")
+SMTP_USERNAME = os.getenv("SMTP_USERNAME")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
+FROM_EMAIL = os.getenv("FROM_EMAIL")
 
 # RabbitMQ configuration
-RABBITMQ_HOST = "localhost"
-RABBITMQ_QUEUE = "email_queue"
+RABBITMQ_HOST = os.getenv("RABBITMQ_HOST")
+RABBITMQ_QUEUE = os.getenv("RABBITMQ_QUEUE")
 
 def send_email(to_email, subject, html_content):
     """Send an email with the given content"""
