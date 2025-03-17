@@ -28,37 +28,10 @@ const EventsPage = () => {
       availability: true,
       location: "Convention Center",
       attendees: 120,
-      description: "A three-day conference focused on emerging technologies and industry trends."
-    },
-    {
-      id: 2,
-      name: "Product Launch Webinar",
-      startDate: "2025-03-25T14:00:00",
-      endDate: "2025-03-25T16:00:00",
-      availability: true,
-      location: "Virtual",
-      attendees: 250,
-      description: "Online presentation of our new product line with Q&A session."
-    },
-    {
-      id: 3,
-      name: "Team Building Workshop",
-      startDate: "2025-04-05T10:00:00",
-      endDate: "2025-04-05T16:00:00",
-      availability: false,
-      location: "City Park",
-      attendees: 45,
-      description: "Outdoor activities focused on improving team collaboration and communication."
-    },
-    {
-      id: 4,
-      name: "Quarterly Business Review",
-      startDate: "2025-04-10T13:00:00",
-      endDate: "2025-04-10T17:00:00",
-      availability: true,
-      location: "Main Office",
-      attendees: 30,
-      description: "Review of Q1 performance and planning for Q2 objectives."
+      description: "A three-day conference focused on emerging technologies and industry trends.",
+      totalSeats: 100,
+      remainingSeats: 20
+      
     }
   ]);
 
@@ -102,13 +75,13 @@ const EventsPage = () => {
         {/* Header */}
         <div className="bg-white rounded-t-lg shadow-sm p-6 border-b border-gray-200">
           <h1 className="text-2xl font-bold text-gray-900">Events</h1>
-          <p className="mt-1 text-gray-500">Browse and manage your upcoming events</p>
+          <p className="mt-1 text-gray-500">Browse and manage upcoming events</p>
         </div>
         
         {/* Events Grid */}
         <div className="bg-white rounded-b-lg shadow-sm p-6 mb-6">
           <div className="mb-6 flex justify-between items-center">
-            <h2 className="text-lg font-medium text-gray-900">Your Events</h2>
+            <h2 className="text-lg font-medium text-gray-900">All Events</h2>
             <button 
               onClick={() => setIsPopupOpen(true)}
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
@@ -157,7 +130,7 @@ const EventsPage = () => {
                     
                     <div className="flex items-center text-gray-600">
                       <Users className="text-blue-500 mr-2" size={18} />
-                      <span>Attendees: {event.attendees}</span>
+                      <span>Attendees: {event.totalSeats - event.remainingSeats}</span>
                     </div>
                   </div>
                   

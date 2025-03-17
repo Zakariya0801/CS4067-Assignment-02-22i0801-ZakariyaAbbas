@@ -2,6 +2,7 @@ import { Calendar, Clock, MapPin, Tag, ExternalLink } from 'lucide-react';
 // import { useGlobalContext } from './GlobalProvider';
 import { useState, useEffect } from 'react';
 import bookingAxios from "./bookingAxios"
+import eventAxios from "./eventaxios"
 
 
 // Define the Booking type
@@ -13,8 +14,9 @@ interface Booking {
   location: string;
   category: string;
   bookingDate: string;
-  status: 'confirmed' | 'pending' | 'cancelled';
-  ticketCount: number;
+  totalPrice: number;
+  tickets: number;
+  bookingStatus: 'confirmed' | 'pending' | 'cancelled';
 }
 
 const BookingsPage = () => {
@@ -28,9 +30,27 @@ const BookingsPage = () => {
       setIsLoading(true);
       try {
         // TODO: Replace with actual API call to bookings microservice
-        const response = await bookingAxios.get(`/bookings/`);
+        const response = await bookingAxios.get(`bookings/`);
         const data = response.data.bookings;
-        setBookings(data);
+        // setBookings(data);
+        // setTimeout(() =>{},1000);
+        // console.log(bookings)
+        const updatedBookings = await Promise.all(
+          data.map(async (book:any) => {
+            const res = await eventAxios.get(`/events/${book.eventId}`);
+            return {
+              ...book,
+              eventDate: res.data.startDate,
+              eventName: res.data.name,
+              location: res.data.location,
+              bookingDate: book.createdAt,
+              eventTime: new Date(res.data.startDate).toISOString().split("T")[1].split(".")[0]
+            };
+          })
+        );
+        setBookings(updatedBookings);
+        
+        setIsLoading(false);
 
         // Mock data for development
         
@@ -46,8 +66,9 @@ const BookingsPage = () => {
                 location: 'FAST Islamabad',
                 category: 'Technology',
                 bookingDate: '2025-03-01',
-                status: 'confirmed',
-                ticketCount: 4
+                bookingStatus: 'confirmed',
+                totalPrice: 1200,
+                tickets: 4
               },
             //   {
             //     id: 'bk-002',
@@ -135,8 +156,8 @@ const BookingsPage = () => {
                   <div className="bg-gray-50 p-4 border-b border-gray-200">
                     <div className="flex justify-between items-center">
                       <h3 className="text-lg font-medium text-gray-900">{booking.eventName}</h3>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(booking.status)}`}>
-                        {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(booking.bookingStatus)}`}>
+                        {booking.bookingStatus.charAt(0).toUpperCase() + booking.bookingStatus.slice(1)}
                       </span>
                     </div>
                   </div>
@@ -163,13 +184,13 @@ const BookingsPage = () => {
                       <div className="space-y-3">
                         <div className="flex items-center">
                           <Tag className="text-blue-500 mr-2" size={18} />
-                          <span className="text-gray-700">{booking.category}</span>
+                          <span className="text-gray-700">Rs. {booking.totalPrice}</span>
                         </div>
                         
                         <div className="flex items-start">
                           <div className="text-gray-700">
                             <p><span className="font-medium">Booked on:</span> {formatDate(booking.bookingDate)}</p>
-                            <p><span className="font-medium">Tickets:</span> {booking.ticketCount}</p>
+                            <p><span className="font-medium">Tickets:</span> {booking.tickets}</p>
                           </div>
                         </div>
                       </div>
