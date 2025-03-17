@@ -1,4 +1,4 @@
-const { default: axiosInstance } = require('../Services/axiosInstance');
+const axiosInstance = require('../Services/axiosInstance');
 const Booking = require('../models/Booking'); // Import the Booking model
 
 // Create a new booking
@@ -6,8 +6,7 @@ const amqp = require('amqplib');
 
 exports.createBooking = async (req, res) => {
     try {
-        const { userId, eventId, tickets, totalPrice, additionalDetails } = req.body;
-        const user = await  axiosInstance.get(`/user/${userId}`);
+        const { userId, username, useremail, eventId, tickets, totalPrice, additionalDetails } = req.body;
         // Create and save the booking
         const newBooking = new Booking({
             userId,
@@ -15,12 +14,13 @@ exports.createBooking = async (req, res) => {
             tickets,
             totalPrice
         });
-
+        const bookingTime = null;
         await newBooking.save();
-
+        // const user = await axiosInstance.get(`/users/${userId}`);
         // Send email notification via RabbitMQ
         try {
             // Connect to RabbitMQ
+            
             const connection = await amqp.connect('amqp://localhost');
             const channel = await connection.createChannel();
             
@@ -32,10 +32,10 @@ exports.createBooking = async (req, res) => {
             const emailData = {
                 type: 'booking_notification',
                 data: {
-                    customer_email: user.email,
-                    customer_name: user.name,
+                    customer_email: username,
+                    customer_name: useremail,
                     service_name: `Booking #${newBooking._id}`,
-                    booking_date: bookingDate || new Date().toISOString().split('T')[0],
+                    booking_date: new Date().toISOString().split('T')[0],
                     booking_time: bookingTime || 'Not specified',
                     additional_details: additionalDetails || `Tickets: ${tickets}, Total Price: ${totalPrice}`
                 }

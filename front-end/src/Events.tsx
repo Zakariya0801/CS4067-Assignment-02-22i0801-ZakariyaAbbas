@@ -1,13 +1,24 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Clock, Calendar, Users } from 'lucide-react';
 import NewEventPopup from './NewEvent';
+import eventAxios from "./eventaxios"
+
 // import { useGlobalContext } from './GlobalProvider';
 
+
 const EventsPage = () => {
-//   const { user } = useGlobalContext();
+  //   const { user } = useGlobalContext();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   
   // Initial hardcoded events data
+  const getEvents = async () =>{
+    const resp = await eventAxios.get('/events');
+    setEvents(resp.data);
+  }
+
+  useEffect(() =>{
+    getEvents();
+  }, [])
   const [events, setEvents] = useState([
     {
       id: 1,

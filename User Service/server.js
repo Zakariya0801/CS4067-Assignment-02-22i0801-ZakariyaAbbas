@@ -8,7 +8,7 @@ const port = process.env.PORT || 4000;
 
 app.use(
     cors({
-      origin: ["http://localhost:5173", "https://purpose-write-main.vercel.app"],
+      origin: ["http://localhost:5173", "http://localhost:4000"],
       methods: ["GET", "POST", "PUT", "DELETE"],
       credentials: true,
     })
