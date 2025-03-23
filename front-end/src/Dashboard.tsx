@@ -1,5 +1,6 @@
 import { User, Mail } from 'lucide-react';
-import { useGlobalContext } from './GlobalProvider';
+import { useEffect, useState } from 'react';
+import axiosInstance from './axiosInstance';
 // import { useGlobalContext } from './GlobalProvider';
 
 const UserDashboard = () => {
@@ -8,8 +9,15 @@ const UserDashboard = () => {
 //     name: "Muhammad Usman",
 //     email: "i221900@nu.edu.pk"
 //   };
-const { user } = useGlobalContext();
-
+const [user,setUser] = useState<any>();
+const getUSer = async () => {
+    const resp = await axiosInstance.get('/auth/user');
+    console.log("userrrr = ", resp.data.decoded.user);
+    setUser(resp.data.decoded.user);
+}
+useEffect(() => {
+    getUSer();
+},[]);
 
 
   return (

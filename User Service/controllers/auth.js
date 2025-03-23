@@ -126,18 +126,13 @@ const login = async (req, res) => {
             }
             const user = results.rows[0];
 
-            console.log("user = ", user);
             // Validate password
             const isPasswordValid = await bcrypt.compare(password, user.password);
             if (!isPasswordValid) {
               return res.status(401).json({ message: "Invalid credentials" });
             }
             const token = jwt.sign(
-              { user: {
-                email: user.email,
-                name: user.name,
-                id: user.id,
-              } },
+              { user: user },
               process.env.JWT_SECRET,
               { expiresIn: "2h" }
             );

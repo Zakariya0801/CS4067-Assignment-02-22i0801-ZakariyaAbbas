@@ -3,10 +3,11 @@ import { Clock, Calendar, Users, BookOpen, Check } from 'lucide-react';
 import NewEventPopup from './NewEvent';
 import eventAxios from "./eventaxios";
 import bookingAxios from "./bookingAxios";
+import axiosInstance from './axiosInstance';
 
 // Define Event interface
 interface Event {
-  id: string;
+  _id: string;
   name: string;
   startDate: string;
   endDate: string;
@@ -26,6 +27,8 @@ const EventsPage = () => {
   const [bookingInProgress, setBookingInProgress] = useState<string | null>(null);
   const [ticketCount, setTicketCount] = useState<{[key: string]: number}>({});
   
+  const [user,setUser] = useState<any>();
+  
   const getEvents = async () => {
     try {
       setIsLoading(true);
@@ -38,9 +41,9 @@ const EventsPage = () => {
       // Mark events as booked if they exist in userBookings
       const eventsWithBookingStatus = eventsData.map((event: Event) => {
         // Check if this event is in user's bookings
-        const isBooked = userBookings.some((booking: any) => booking.eventId === event.id);
+        const isBooked = userBookings.some((booking: any) => booking.eventId === event._id);
         // Initialize ticket count for this event
-        setTicketCount(prev => ({...prev, [event.id]: 1}));
+        setTicketCount(prev => ({...prev, [event._id]: 1}));
         return {...event, isBooked};
       });
       
@@ -54,7 +57,11 @@ const EventsPage = () => {
   
   const getUserBookings = async () => {
     try {
-      const response = await bookingAxios.get('/bookings');
+      const resp = await axiosInstance.get('/auth/user');
+      setUser(resp.data.decoded.user);
+      const response = await bookingAxios.post('/bookings/user',{
+        userId: resp.data.decoded.user.id
+      });
       return response.data.bookings || [];
     } catch (error) {
       console.error("Error fetching user bookings:", error);
@@ -79,27 +86,22 @@ const EventsPage = () => {
   };
   
   // Handle booking an event
-  const handleBookEvent = async (eventId: string, event: Event) => {
+  const handleBookEvent = async (event: Event) => {
+    console.log("event = ", event);
+
     // Get user info from localStorage
-    const userString = localStorage.getItem("user");
-    if (!userString) {
-      alert("You need to be logged in to book an event.");
-      return;
-    }
-    
-    const user = JSON.parse(userString);
-    const tickets = ticketCount[eventId] || 1;
+    const tickets = ticketCount[event._id] || 1;
     
     // Calculate price based on tickets (you might want to customize this)
     const totalPrice = 1000 * tickets; // Assuming each ticket costs 1000
     
     try {
-      setBookingInProgress(eventId);
-      
+      setBookingInProgress(event._id);
+      console.log("user = ", user.id);
       // Create booking payload
       const bookingData = {
         userId: user.id,
-        eventId: eventId,
+        eventId: event._id,
         tickets: tickets,
         totalPrice: totalPrice,
         additionalDetails: `Booking for ${event.name}`
@@ -110,7 +112,7 @@ const EventsPage = () => {
       
       // Update event status in the UI
       setEvents(events.map(e => 
-        e.id === eventId ? {...e, isBooked: true} : e
+        e._id === event._id ? {...e, isBooked: true} : e
       ));
       
       alert("Event booked successfully!");
@@ -185,7 +187,7 @@ const EventsPage = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {events.map((event) => (
-                <div key={event.id} className="border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+                <div key={event._id} className="border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
                   <div className="p-6">
                     <div className="flex justify-between items-start mb-4">
                       <h3 className="text-xl font-bold text-gray-900">{event.name}</h3>
@@ -240,17 +242,17 @@ const EventsPage = () => {
                             <input
                               type="number"
                               min="1"
-                              value={ticketCount[event.id] || 1}
-                              onChange={(e) => handleTicketCountChange(event.id, parseInt(e.target.value))}
+                              value={ticketCount[event._id] || 1}
+                              onChange={(e) => handleTicketCountChange(event._id, parseInt(e.target.value))}
                               className="border border-gray-300 rounded-md w-16 px-2 py-1 text-center"
                             />
                           </div>
                           <button
-                            onClick={() => handleBookEvent(event.id, event)}
-                            disabled={bookingInProgress === event.id}
+                            onClick={() => handleBookEvent(event)}
+                            disabled={bookingInProgress === event._id}
                             className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
                           >
-                            {bookingInProgress === event.id ? (
+                            {bookingInProgress === event._id ? (
                               "Booking..."
                             ) : (
                               <>

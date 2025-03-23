@@ -2,6 +2,7 @@ import { Calendar, Clock, MapPin, Tag, ExternalLink } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import bookingAxios from "./bookingAxios";
 import eventAxios from "./eventaxios";
+import axiosInstance from './axiosInstance';
 
 // Define the Booking type
 interface Booking {
@@ -23,14 +24,18 @@ const BookingsPage = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+  const [user, setUser] = useState<any | null>(null);
   useEffect(() => {
     setError("");
     const fetchBookings = async () => {
       setIsLoading(true);
       try {
         // Fetch user bookings
-        const response = await bookingAxios.get(`bookings/`);
+        const resp = await axiosInstance.get('/auth/user');
+        setUser(resp.data.decoded.user);
+        const response = await bookingAxios.post('/bookings/user',{
+          userId: resp.data.decoded.user.id
+        });
         const data = response.data.bookings;
         
         // Enrich booking data with event details
