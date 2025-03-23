@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:latest
@@ -29,6 +27,99 @@ services:
       DB_DATABASE: usersdb
     ports:
       - "3000:3000"
+  notification-service:
+    build: ./Notification Service
+    container_name: notification-service
+    ports:
+      - "6000:6000"
+    depends_on:
+      - rabbitmq
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - FROM_EMAIL=zakariyach37@gmail.com
+      - SMTP_PASSWORD=khec yeyu zgvw sher
+      - SMTP_SERVER=smtp.gmail.com
+      - SMTP_PORT=587
+      - RABBITMQ_QUEUE=email_queue
+    networks:
+      - app-network
 
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    ports:
+      - "5672:5672"  # Default RabbitMQ port
+      - "15672:15672" # RabbitMQ Management UI
+    networks:
+      - app-network
+
+  event-service:
+    build:
+      context: ./Event Service
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongodb
+    environment:
+      - MONGO_URL=mongodb://mongodb:27017/eventdb
+      - CORS_ORIGIN=http://localhost:5173
+    networks:
+      - app-network
+
+  booking-service:
+    build:
+      context: ./Booking Service
+    ports:
+      - "4000:4000"
+    depends_on:
+      - mongodb
+    environment:
+      - MONGO_URL=mongodb://mongodb:27017/bookingdb
+      - CORS_ORIGIN=http://localhost:5173
+    networks:
+      - app-network
+    
+  mongodb:
+    image: mongo:6
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - app-network
+
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=admin
+    depends_on:
+      - mongodb
+    networks:
+      - app-network
+  front-end:
+    build:
+      context: ./front-end
+    container_name: front-end
+    ports:
+      - "5173:80"  # Vite runs on 5173 in development, but Nginx serves it on 80
+    depends_on:
+      - user-service
+      - event-service
+      - booking-service
+    networks:
+      - app-network
+
+name: 22i-0801_E_Assignment2
 volumes:
   pgdata:
+  mongo_data:
+networks:
+  app-network:
+    driver: bridge

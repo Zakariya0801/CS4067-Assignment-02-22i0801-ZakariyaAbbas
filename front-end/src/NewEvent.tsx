@@ -32,7 +32,7 @@ const NewEventPopup = ({ isOpen, onClose, onAddEvent }:EventProp) => {
     const newEvent = {
       ...eventData,
       id: Date.now(), // Generate a simple unique ID
-      attendees: parseInt(eventData.attendees) || 0
+      totalSeats: parseInt(eventData.attendees) || 0
     };
     onAddEvent(newEvent);
     onClose();

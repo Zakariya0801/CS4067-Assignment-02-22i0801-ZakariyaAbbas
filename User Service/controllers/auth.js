@@ -141,7 +141,7 @@ const login = async (req, res) => {
               process.env.JWT_SECRET,
               { expiresIn: "2h" }
             );
-            res.json({ token });
+            res.json({ token, user });
         }
     );
   } catch (error) {

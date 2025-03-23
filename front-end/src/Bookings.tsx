@@ -1,13 +1,12 @@
 import { Calendar, Clock, MapPin, Tag, ExternalLink } from 'lucide-react';
-// import { useGlobalContext } from './GlobalProvider';
 import { useState, useEffect } from 'react';
-import bookingAxios from "./bookingAxios"
-import eventAxios from "./eventaxios"
-
+import bookingAxios from "./bookingAxios";
+import eventAxios from "./eventaxios";
 
 // Define the Booking type
 interface Booking {
   id: string;
+  eventId: string;
   eventName: string;
   eventDate: string;
   eventTime: string;
@@ -17,91 +16,85 @@ interface Booking {
   totalPrice: number;
   tickets: number;
   bookingStatus: 'confirmed' | 'pending' | 'cancelled';
+  additionalDetails?: string;
 }
 
 const BookingsPage = () => {
-//   const { user } = useGlobalContext();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  
   useEffect(() => {
+    setError("");
     const fetchBookings = async () => {
       setIsLoading(true);
       try {
-        // TODO: Replace with actual API call to bookings microservice
+        // Fetch user bookings
         const response = await bookingAxios.get(`bookings/`);
         const data = response.data.bookings;
-        // setBookings(data);
-        // setTimeout(() =>{},1000);
-        // console.log(bookings)
+        
+        // Enrich booking data with event details
         const updatedBookings = await Promise.all(
-          data.map(async (book:any) => {
-            const res = await eventAxios.get(`/events/${book.eventId}`);
-            return {
-              ...book,
-              eventDate: res.data.startDate,
-              eventName: res.data.name,
-              location: res.data.location,
-              bookingDate: book.createdAt,
-              eventTime: new Date(res.data.startDate).toISOString().split("T")[1].split(".")[0]
-            };
+          data.map(async (book: any) => {
+            try {
+              const res = await eventAxios.get(`/events/${book.eventId}`);
+              return {
+                ...book,
+                eventDate: res.data.startDate,
+                eventName: res.data.name,
+                location: res.data.location,
+                bookingDate: book.createdAt,
+                eventTime: new Date(res.data.startDate).toISOString().split("T")[1].split(".")[0],
+                bookingStatus: book.status || 'confirmed' // Handle property name consistency
+              };
+            } catch (err) {
+              console.error(`Failed to fetch event details for event ID ${book.eventId}`, err);
+              // Return booking with placeholder event data if event details fetch fails
+              return {
+                ...book,
+                eventName: "Unknown Event",
+                eventDate: book.createdAt || new Date().toISOString(),
+                location: "Unknown",
+                bookingDate: book.createdAt || new Date().toISOString(),
+                eventTime: "00:00:00",
+                bookingStatus: book.status || 'confirmed'
+              };
+            }
           })
         );
+        
         setBookings(updatedBookings);
-        
         setIsLoading(false);
-
-        // Mock data for development
-        
       } catch (err) {
-        // setError('Failed to load bookings. Please try again later.');
-        setTimeout(() => {
-            setBookings([
-              {
-                id: '67d0dc07f18709f918667819',
-                eventName: 'NASCON',
-                eventDate: 'October 15, 2025',
-                eventTime: '05:00 am',
-                location: 'FAST Islamabad',
-                category: 'Technology',
-                bookingDate: '2025-03-01',
-                bookingStatus: 'confirmed',
-                totalPrice: 1200,
-                tickets: 4
-              },
-            //   {
-            //     id: 'bk-002',
-            //     eventName: 'Music Festival',
-            //     eventDate: '2025-05-20',
-            //     eventTime: '04:00 PM - 11:00 PM',
-            //     location: 'City Park',
-            //     category: 'Entertainment',
-            //     bookingDate: '2025-03-05',
-            //     status: 'confirmed',
-            //     ticketCount: 2
-            //   },
-            //   {
-            //     id: 'bk-003',
-            //     eventName: 'Workshop: AI Basics',
-            //     eventDate: '2025-03-25',
-            //     eventTime: '02:00 PM - 04:00 PM',
-            //     location: 'Innovation Hub',
-            //     category: 'Education',
-            //     bookingDate: '2025-03-10',
-            //     status: 'pending',
-            //     ticketCount: 1
-            //   }
-            ]);
-            setIsLoading(false);
-          }, 1000);
+        console.error("Failed to load bookings", err);
+        setError('Failed to load bookings. Please try again later.');
         setIsLoading(false);
+        
+        // Fallback to mock data in development
+        // if (process.env.NODE_ENV === 'development') {
+        //   setTimeout(() => {
+        //     setBookings([
+        //       {
+        //         id: '67d0dc07f18709f918667819',
+        //         eventId: 'event123',
+        //         eventName: 'NASCON',
+        //         eventDate: '2025-10-15T05:00:00',
+        //         eventTime: '05:00 am',
+        //         location: 'FAST Islamabad',
+        //         category: 'Technology',
+        //         bookingDate: '2025-03-01',
+        //         bookingStatus: 'confirmed',
+        //         totalPrice: 1200,
+        //         tickets: 4
+        //       },
+        //     ]);
+        //     setIsLoading(false);
+        //   }, 1000);
+        // }
       }
     };
 
-    // if (user) {
-      fetchBookings();
-    // }
+    fetchBookings();
   }, []);
 
   const getStatusBadgeClass = (status: string) => {
@@ -191,14 +184,20 @@ const BookingsPage = () => {
                           <div className="text-gray-700">
                             <p><span className="font-medium">Booked on:</span> {formatDate(booking.bookingDate)}</p>
                             <p><span className="font-medium">Tickets:</span> {booking.tickets}</p>
+                            {booking.additionalDetails && (
+                              <p><span className="font-medium">Details:</span> {booking.additionalDetails}</p>
+                            )}
                           </div>
                         </div>
                       </div>
                     </div>
                     
                     <div className="mt-4 pt-4 border-t border-gray-200 flex justify-end">
-                      <button className="flex items-center text-blue-600 hover:text-blue-800 transition duration-200">
-                        View details
+                      <button 
+                        className="flex items-center text-blue-600 hover:text-blue-800 transition duration-200"
+                        onClick={() => window.location.href = `/events/${booking.eventId}`}
+                      >
+                        View event details
                         <ExternalLink size={16} className="ml-1" />
                       </button>
                     </div>
