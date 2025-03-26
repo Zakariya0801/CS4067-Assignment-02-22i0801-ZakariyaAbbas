@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: onlineeventbookingzakariyaabbas
+data:
+  # Database connection strings
+  MONGO_URL_BOOKING: "mongodb://mongodb:27017/bookingdb"
+  MONGO_URL_EVENT: "mongodb://mongodb:27017/eventdb"
+  USER_SERVICE_URL: "http://express-auth-app:3000"
+  EVENT_SERVICE_URL: "http://event-service:5000"
+  BOOKING_SERVICE_URL: "http://booking-service:4000"
+  CORS_ORIGIN: "http://localhost:5173"
