@@ -125,10 +125,6 @@ services:
       - user-service
       - event-service
       - booking-service
-    environment:
-      - VITE_USER_AXIOS=http://localhost:3000/api/users
-      - VITE_EVENT_AXIOS=http://localhost:5000/api/events
-      - VITE_BOOKING_AXIOS=http://localhost:4000/api/bookings
     networks:
       - app-network
 

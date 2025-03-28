@@ -20,6 +20,7 @@ const authRoutes = require('./routes/authRoutes');
 
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
+app.use("/" , authRoutes)
 app.use('/api/users',userRoutes);
 app.use('/api/auth',authRoutes);
 app.listen(port, ()=>{
