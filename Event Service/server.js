@@ -5,13 +5,13 @@ const cors = require("cors");
 const eventRoutes = require('./routes/EventRoutes');
 const app = express()
 const http = require('http');
-const port = process.env.PORT || 3000
+const port = process.env.PORT || 5000
 
 const server = http.createServer(app);
 app.use(express.json());
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: ["http://localhost:5173", "http://localhost:4000"],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })

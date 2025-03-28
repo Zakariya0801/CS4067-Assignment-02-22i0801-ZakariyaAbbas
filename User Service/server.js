@@ -8,7 +8,7 @@ const port = process.env.PORT || 4000;
 
 app.use(
     cors({
-      origin: ["http://localhost:5173", "http://localhost:4000"],
+      origin: [process.env.CORS_ORIGIN, process.env.BOOKING_SERVICE_URL],
       methods: ["GET", "POST", "PUT", "DELETE"],
       credentials: true,
     })
@@ -20,6 +20,7 @@ const authRoutes = require('./routes/authRoutes');
 
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
+app.use("/" , authRoutes)
 app.use('/api/users',userRoutes);
 app.use('/api/auth',authRoutes);
 app.listen(port, ()=>{

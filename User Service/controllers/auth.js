@@ -1,4 +1,4 @@
-const bcrypt = require("bcrypt");
+const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken");
 const {pool} = require('../dbConfig');
 
@@ -60,39 +60,32 @@ const signup = async (req, res) => {
       }
       console.log("hrererera")
       // Check if user exists
-      pool.query(
+      const response  = await pool.query(
         `SELECT * FROM users
-        WHERE email = $1`, [email], async (err,results) => {
-            if(err){
-                throw err;
-            }
-            console.log(results.rows)
+        WHERE email = $1`, [email], );
 
-            if(results.rows.length > 0){
-                return res.status(400).json({ message: "User already exists" });
-            }
-            
-        }
-    );
-  
+      if (response.rows.length > 0) {
+        return res.status(400).json({ message: "User already exists" });
+      }
+      console.log("doingggg htis")
+      console.log("password = ", password )
       // Hash password
       const hashedPassword = await bcrypt.hash(password, 10);
-    
+      console.log("doingggg htis")
       // Create user
-      pool.query(
+      const resp = await pool.query(
         `INSERT INTO users(name,email,password)
          VALUES($1,$2,$3)
-         RETURNING id,password`, [name,email,hashedPassword],
-         (err, results) =>{
-            if(err){
-                throw err;
-            }
-            res.status(200).json({
-                message: "Successfully Signed up"
-            });
-         }
-      );
-  
+         RETURNING id,password`, [name,email,hashedPassword]);
+        
+      if (resp.rows.length == 0) {
+        return res.status(500).json({ message: "Server error" });
+      }
+      const user = resp.rows[0];
+      console.log("user = ", user)
+      res.status(200).json({
+        message: "Successfully Signed up"
+    });
       // Create team for admin
     } catch (error) {
       console.error("Signup error:", error);
@@ -126,22 +119,17 @@ const login = async (req, res) => {
             }
             const user = results.rows[0];
 
-            console.log("user = ", user);
             // Validate password
             const isPasswordValid = await bcrypt.compare(password, user.password);
             if (!isPasswordValid) {
               return res.status(401).json({ message: "Invalid credentials" });
             }
             const token = jwt.sign(
-              { user: {
-                email: user.email,
-                name: user.name,
-                id: user.id,
-              } },
+              { user: user },
               process.env.JWT_SECRET,
               { expiresIn: "2h" }
             );
-            res.json({ token });
+            res.json({ token, user });
         }
     );
   } catch (error) {

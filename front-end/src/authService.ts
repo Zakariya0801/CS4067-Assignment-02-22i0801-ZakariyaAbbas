@@ -11,14 +11,15 @@ const authService = {
     const response = await axiosInstance.post("/auth/login", credentials);
     if (response.data.token) {
       localStorage.setItem("token", response.data.token);
-      localStorage.setItem("role", response.data.role);
+      localStorage.setItem("user", response.data.user);
+      // localStorage.setItem("role", response.data.role);
     }
     return response.data;
   },
 
   logout: () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("role");
+      localStorage.removeItem("user");
   },
  
 

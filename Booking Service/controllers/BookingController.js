@@ -7,18 +7,18 @@ const axios = require('axios');
 
 // Create an axios instance for the event service
 const eventServiceClient = axios.create({
-  baseURL: 'http://localhost:5000/api/events',
+  baseURL: `${process.env.EVENT_SERVICE_URL}/api/events`,
   timeout: 5000
 });
 const userServiceClient = axios.create({
-    baseURL: 'http://localhost:3000/api/users',
+    baseURL: `${process.env.USER_SERVICE_URL}/api/users`,
     timeout: 5000
   });
 
 exports.createBooking = async (req, res) => {
     try {
         const { userId, eventId, tickets, totalPrice, additionalDetails } = req.body;
-        
+        console.log("herererer = ", req.body)
         // Validate required fields
         if (!eventId || !tickets || tickets <= 0) {
             return res.status(400).json({ 
@@ -31,7 +31,7 @@ exports.createBooking = async (req, res) => {
         try {
             const eventResponse = await eventServiceClient.get(`/${eventId}`);
             const event = eventResponse.data;
-            
+            console.log("fetcheddd")
             // Check if event exists
             if (!event) {
                 return res.status(404).json({ 
@@ -48,7 +48,9 @@ exports.createBooking = async (req, res) => {
                 });
             }
             
+            console.log("here")
             const user = await userServiceClient.get(`/${userId}`);
+            console.log("user fethceddd")
             if(!user){
                 return res.status(400).json({ 
                     success: false, 
@@ -120,7 +122,7 @@ exports.createBooking = async (req, res) => {
                 remainingSeats: updatedRemainingSeats
             });
         } catch (eventError) {
-            console.error("Failed to fetch event data:", eventError);
+            console.error("Failed to fetch event data:", eventError.message);
             return res.status(500).json({ 
                 success: false, 
                 message: 'Error fetching event data', 
@@ -128,6 +130,7 @@ exports.createBooking = async (req, res) => {
             });
         }
     } catch (error) {
+        console.log("err = ", err.message)
         res.status(500).json({ 
             success: false, 
             message: 'Error creating booking', 
@@ -139,10 +142,22 @@ exports.createBooking = async (req, res) => {
 exports.getAllBookings = async (req, res) => {
     try {
         console.log("received")
-        const bookings = await Booking.find(); // Populate event details
+        const bookings = await Booking.find().populate('eventId');; // Populate event details
         console.log("doneee")
         res.status(200).json({ success: true, bookings });
     } catch (error) {
+        res.status(500).json({ success: false, message: 'Error fetching bookings', error: error.message });
+    }
+};
+
+exports.getUserBookings = async (req, res) => {
+    try {
+        console.log("body = ", req.body.userId)
+        const bookings = await Booking.find({ userId
+            : req.body.userId }).populate('eventId');
+        res.status(200).json({ success: true, bookings });
+    }
+    catch (error) {
         res.status(500).json({ success: false, message: 'Error fetching bookings', error: error.message });
     }
 };

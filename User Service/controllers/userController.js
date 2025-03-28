@@ -1,5 +1,5 @@
 const express = require('express')
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const {pool} = require('../dbConfig')
 
 const getAllUsers = (req,res) => {
@@ -8,10 +8,12 @@ const getAllUsers = (req,res) => {
 
 const getUser = (req,res) => {
     try{
+        console.log("fetching use ", req.params.id);
     pool.query(
         `SELECT * FROM users
-        WHERE id = $1`, [req.body.id], (err,results) => {
+        WHERE id = $1`, [req.params.id], (err,results) => {
             if(err){
+                console.log("erroringggg")
                 throw err;
             }
             if(err)

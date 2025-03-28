@@ -11,7 +11,7 @@ const Navbar = () => {
   const location = useLocation();
   
   const { user } = useGlobalContext();
-  const [activeItem, setActiveItem] = useState(pathfinder[location.pathname]);
+  const [activeItem, setActiveItem] = useState(pathfinder[location.pathname as keyof typeof pathfinder]);
 
   const navItems = [
     { name: 'Home', icon: Home, href:"/home"},
