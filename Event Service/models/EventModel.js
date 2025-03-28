@@ -30,7 +30,7 @@ const eventSchema = new mongoose.Schema({
     },
     remainingSeats: {
         type: Number,
-        required: true,
+        default: this.totalSeats,
         min: 0
     },
     description: {

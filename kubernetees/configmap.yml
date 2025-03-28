@@ -4,10 +4,16 @@ metadata:
   name: app-config
   namespace: onlineeventbookingzakariyaabbas
 data:
-  # Database connection strings
+  CONNECTION_STRING: "postgresql://postgres:<password>@postgres-db:5432/auth_db"
+  MONGO_URL_EVENTS: "mongodb://mongodb:27017/eventdb"
   MONGO_URL_BOOKING: "mongodb://mongodb:27017/bookingdb"
-  MONGO_URL_EVENT: "mongodb://mongodb:27017/eventdb"
-  USER_SERVICE_URL: "http://express-auth-app:3000"
-  EVENT_SERVICE_URL: "http://event-service:5000"
-  BOOKING_SERVICE_URL: "http://booking-service:4000"
   CORS_ORIGIN: "http://localhost:5173"
+  BOOKING_SERVICE_URL: "http://booking-service:4000"
+  EVENT_SERVICE_URL: "http://event-service:5000"
+  USER_SERVICE_URL: "http://express-auth-app:3000"
+  RABBITMQ_HOST: "rabbitmq"
+  RABBITMQ_PORT: "5672"
+  RABBITMQ_QUEUE: "email_queue"
+  SMTP_SERVER: "smtp.gmail.com"
+  SMTP_PORT: "587"
+  FROM_EMAIL: "zakariyach37@gmail.com"

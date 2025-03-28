@@ -8,7 +8,7 @@ const port = process.env.PORT || 4000;
 
 app.use(
     cors({
-      origin: ["http://localhost:5173", "http://localhost:4000"],
+      origin: [process.env.CORS_ORIGIN, process.env.BOOKING_SERVICE_URL],
       methods: ["GET", "POST", "PUT", "DELETE"],
       credentials: true,
     })

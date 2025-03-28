@@ -7,11 +7,11 @@ const axios = require('axios');
 
 // Create an axios instance for the event service
 const eventServiceClient = axios.create({
-  baseURL: 'http://localhost:5000/api/events',
+  baseURL: `${process.env.EVENT_SERVICE_URL}/api/events`,
   timeout: 5000
 });
 const userServiceClient = axios.create({
-    baseURL: 'http://localhost:3000/api/users',
+    baseURL: `${process.env.USER_SERVICE_URL}/api/users`,
     timeout: 5000
   });
 

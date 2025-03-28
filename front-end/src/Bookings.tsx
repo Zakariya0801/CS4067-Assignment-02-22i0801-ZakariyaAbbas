@@ -24,7 +24,7 @@ const BookingsPage = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<any | null>(null);
+  const [_, setUser] = useState<any | null>(null);
   useEffect(() => {
     setError("");
     const fetchBookings = async () => {

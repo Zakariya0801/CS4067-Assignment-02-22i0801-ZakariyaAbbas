@@ -1,32 +1,31 @@
-const { Client } = require('pg');
+require('dotenv').config();
+const { Pool } = require('pg');
 
-const client = new Client({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_DATABASE,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
-});
+const connectionString = process.env.CONNECTION_STRING;
+console.log("conn = ", connectionString);
 
-const createTableQuery = `
-  CREATE TABLE IF NOT EXISTS users (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL
-  );
-`;
+const pool = new Pool({ connectionString });
 
-async function initializeDatabase() {
-  try {
-    await client.connect();
-    await client.query(createTableQuery);
-    console.log("✅ Users table ensured in the database.");
-  } catch (err) {
-    console.error("❌ Database initialization failed:", err);
-  } finally {
-    await client.end();
-  }
-}
+const func = async () => {
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(100),
+                email VARCHAR(100),
+                password VARCHAR(100),
+                created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        console.log("Table created successfully");
 
-initializeDatabase();
+        const result = await pool.query("SELECT * FROM users");
+        console.log(result.rows);
+    } catch (err) {
+        console.error("DB Error:", err);
+    } finally {
+        pool.end();
+    }
+};
+
+func();

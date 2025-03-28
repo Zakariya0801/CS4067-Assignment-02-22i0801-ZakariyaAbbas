@@ -2,3 +2,5 @@
 */.env
 Notification Service/.env
 */.venv
+compose.yml
+kubernetees/

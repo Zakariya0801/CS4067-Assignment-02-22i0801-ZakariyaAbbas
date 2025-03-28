@@ -1,5 +1,5 @@
 const express = require('express')
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const {pool} = require('../dbConfig')
 
 const getAllUsers = (req,res) => {

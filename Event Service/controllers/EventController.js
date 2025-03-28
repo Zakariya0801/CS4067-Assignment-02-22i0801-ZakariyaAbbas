@@ -3,7 +3,10 @@ const Event = require('../models/EventModel'); // Adjust path as needed
 // Create a new event
 exports.createEvent = async (req, res) => {
     try {
-        const event = new Event(req.body);
+        const event = new Event({
+            ...req.body,
+            remainingSeats: req.body.totalSeats
+        });
         await event.save();
         res.status(201).json(event);
     } catch (error) {
